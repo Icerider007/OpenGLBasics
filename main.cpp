@@ -119,8 +119,8 @@ int main() {
 	//This makes it so it knows which buffer to refer to, same as the other bind function
 	//Also specifies its buffer type
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBindVertexArray(VAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 	//This puts the VAO data into the buffer (VBO)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
