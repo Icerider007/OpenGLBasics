@@ -2,8 +2,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-const int WIDTH = 1024;
-const int HEIGHT= 768;
+const int WIDTH = 800;
+const int HEIGHT= 800;
 
 
 // Vertex Shader source code
@@ -18,7 +18,7 @@ const char* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = vec4(0.8f, 0.3f, 0.02f, 1.0f);\n"
+"   FragColor = vec4(1.0f, 1.0f, 1.00f, 1.0f);\n"
 "}\n\0";
 
 
@@ -30,16 +30,24 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-	//Tells glfw what type of OpenGL we're using, and that actually is important
-	//because different versions of OpenGl have different functions. This one is 
+	//Tells glfw what type of OpenGL we're using, and that actually is important because different versions of OpenGl have different functions. This one is 
 	//supposed to have modern functions I guess
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
-		-0.5f, -0.5f * float(sqrt(3)) / 3, 1.0f,//Lower left vertex
-		0.5f,-0.5f * float(sqrt(3)) / 3, 0.0f,//Lower right vertex
-		0.0f,0.5f * float(sqrt(3)) * 2/3, 0.0f,//Top vertex
+		-0.5f, -0.5f/(float)sqrt(3) , 0.0f,		//0
+		0.5f,-0.5f/(float)sqrt(3), 0.0f,		//1
+		0.0f,1.0f/(float)sqrt(3), 0.0f,			//2
+		0.5f/2, 0.25f/(float)sqrt(3),0.0f,		//3
+		0.0f, -0.5f/(float)sqrt(3),0.0f,		//4
+		-0.5f/2, 0.25f/(float)sqrt(3),0.0f,		//5
+	};
+
+	GLuint indices[] = {
+		0,4,3,	//Lower left triangle
+		4,1,5,	//Lower right triangle
+		3,5,2	//Upper triangle
 	};
 
 	//Creates the window, and at the same time, adds title and stuff
@@ -74,42 +82,48 @@ int main() {
 	glShaderSource(fragment_shader, 1, &fragmentShaderSource, NULL);
 	glCompileShader(fragment_shader);
 
-	//Creates a shader program to use the shaders
-	GLuint shader_program = glCreateProgram();
+	//Shader program
+		//Creates a shader program to use the shaders
+		GLuint shader_program = glCreateProgram();
 
-	//Attaches the vertex shader to the shader program
-	glAttachShader(shader_program, vertex_shader);
-	//Attaches fragment shader to shader program
-	glAttachShader(shader_program, fragment_shader);
+		//Attaches the vertex shader to the shader program
+		glAttachShader(shader_program, vertex_shader);
+		//Attaches fragment shader to shader program
+		glAttachShader(shader_program, fragment_shader);
 
-	//Links program, so it compiles and runs with the rest of the code I guess?
-	glLinkProgram(shader_program);
+		//Links program, so it compiles and runs with the rest of the code I guess?
+		glLinkProgram(shader_program);
 
-	//Now that we've loaded the shaders into the shader program, we can delete the shader objects
-	glDeleteShader(vertex_shader);
-	glDeleteShader(fragment_shader);
+		//Now that we've loaded the shaders into the shader program, we can delete the shader objects
+		glDeleteShader(vertex_shader);
+		glDeleteShader(fragment_shader);
 
-	//We're initializing the VertexArrayObject and the VertexBufferObject
-	//The array stores all the points in a matrix, and the buffer, well
-	//that's what we use to load the points? Before we draw them I mean
-	GLuint VAO,VBO;
+		//We're initializing the VertexArrayObject and the VertexBufferObject
+		//The array stores all the points in a matrix, and the buffer, well
+		//that's what we use to load the points? Before we draw them I mean
+	//Shader program end
+	
+	GLuint VAO,VBO,EBO; //Initialize Vertex Array Object,
+						//			 Vertex Buffer Object,
+						//			 Element Buffer Object
 
-	glGenVertexArrays(1, &VAO);
 
-	//So, I don't know if this is necessary, but basically, binding the VAO 
-	//makes it so it knows which array to draw from? To refer to and stuff?
-	//Tried commenting it out and it didn't work
-	glBindVertexArray(VAO);
 
 	//This generates a buffer with only one object
+	//Generates reference value
 	glGenBuffers(1, &VBO);
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &EBO);
+	
 	//This makes it so it knows which buffer to refer to, same as the other bind function
-	//Also specifies that it's an ARRAY_BUFFER
+	//Also specifies its buffer type
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBindVertexArray(VAO);
 
 	//This puts the VAO data into the buffer (VBO)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
-
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	//This uh, it configures the vertex attributes so OpenGL knows how to read
 	//the buffer. Cause it needs to know 
 	//glVertexAttribPointer(index_start,size_of_array,typeofarray,isthearraynormalized,stride?,uh_pointer_leading_to_array_index)
@@ -123,8 +137,6 @@ int main() {
 	//Binds VAO to 0
 	glBindVertexArray(0);
 
-	//Eh, decides what the viewport is
-	glViewport(0, 0, WIDTH, HEIGHT);
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
 	while (!glfwWindowShouldClose(win)) {
@@ -140,12 +152,14 @@ int main() {
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
 		//Does the thing to draw the array
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 9 , GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(win);
 
 	}
+	//Cleans up 
 	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteProgram(shader_program);
 
