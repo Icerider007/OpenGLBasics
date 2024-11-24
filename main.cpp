@@ -37,12 +37,12 @@ int main() {
 	
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
-		-0.5f, -0.5f/(float)sqrt(3) , 0.0f,		//0
-		0.5f,-0.5f/(float)sqrt(3), 0.0f,		//1
-		0.0f,1.0f/(float)sqrt(3), 0.0f,			//2
-		0.5f/2, 0.25f/(float)sqrt(3),0.0f,		//3
-		0.0f, -0.5f/(float)sqrt(3),0.0f,		//4
-		-0.5f/2, 0.25f/(float)sqrt(3),0.0f,		//5
+		-0.5f,	-0.5f * (float)sqrt(3)	/3,	0.0f,		//0
+		0.5f,	-0.5f * (float)sqrt(3)	/3, 0.0f,		//1
+		0.0f,	0.5f * (float)sqrt(3)	*	2,	0.0f,		//2
+		0.5f/2,	0.5f * (float)sqrt(3)	/ 6 ,	0.0f,		//3
+		0.0f,	-0.5f * (float)sqrt(3)	/ 6,	0.0f,		//4
+		-0.5f/2, 0.5f * (float)sqrt(3)	/ 6,	0.0f,		//5
 	};
 
 	GLuint indices[] = {
@@ -123,7 +123,7 @@ int main() {
 	glBindVertexArray(VAO);
 
 	//This puts the VAO data into the buffer (VBO)
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	//This uh, it configures the vertex attributes so OpenGL knows how to read
 	//the buffer. Cause it needs to know 
@@ -132,11 +132,14 @@ int main() {
 	//This enables the vertex attrib array and shows OpenGl which index to start reading from
 	glEnableVertexAttribArray(0);
 
-	//Um, this binds both the VAO and VBO to 0 so we don't accidentally modify them?
+	//This unbinds the buffers and arrays
 	//Binds VBO to 0
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//Binds VAO to 0
 	glBindVertexArray(0);
+	//Binds EBO to 0, must be done after unbinding VAO because
+	//EBO is linked in VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
