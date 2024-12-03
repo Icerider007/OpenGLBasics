@@ -11,9 +11,11 @@ const int HEIGHT= 800;
 
 int main() {
 	//Starts glfw, I guess? What does that even mean lol
+	std::cout << "Initializing glfw..\n" ;
 	glfwInit();
 
 	//Tells glfw openGL version. Shouldn't this come AFTER we specify profile?
+	std::cout << "Setting glfw window hints\n";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
@@ -38,6 +40,7 @@ int main() {
 	};
 
 	//Creates the window, and at the same time, adds title and stuff
+	std::cout << "Creating window\n";
 	GLFWwindow* win = glfwCreateWindow(WIDTH, HEIGHT, "Winner",NULL,NULL);
 
 	//Error check
@@ -46,6 +49,8 @@ int main() {
 		glfwTerminate();
 		return 1;
 	}
+	
+	std::cout << "Window created successfully\n";
 	//This uhhh
 	//"Introduces the current window to the context"? Wtf does that
 	//even mean?
@@ -58,6 +63,7 @@ int main() {
 	glViewport(0, 0, WIDTH, HEIGHT);
 
 	//Shaders
+	std::cout << "Loading shaders..\n" ;
 	Shader shaderProgram("default.vert","default.frag");
 	
 	//We're initializing the VertexArrayObject and the VertexBufferObject
@@ -71,12 +77,14 @@ int main() {
 
 	//This generates a buffer with only one object
 	//Generates reference value
+	std::cout << "Generating buffers..\n";
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
 	
 	//This makes it so it knows which buffer to refer to, same as the other bind function
 	//Also specifies its buffer type
+	std::cout << "Binding buffers..\n";
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -102,6 +110,7 @@ int main() {
 
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
+	std::cout << "Starting render loop\n";
 	while (!glfwWindowShouldClose(win)) {
 		glfwPollEvents();
 	
@@ -120,7 +129,9 @@ int main() {
 		glfwSwapBuffers(win);
 
 	}
+	
 	//Cleans up 
+	std::cout << "Cleaning up arrays and buffers\n";
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
