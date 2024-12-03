@@ -10,7 +10,7 @@ add_subdirectory(Libraries/glfw)
 include_directories("${CMAKE_SOURCE_DIR}/Libraries/include")
 
 # Add the executable
-add_executable(app glad.c main.cpp)
+add_executable(app glad.c shaderClass.cpp main.cpp)
 
 # Link GLFW to the executable
 target_link_libraries(app PRIVATE glfw)

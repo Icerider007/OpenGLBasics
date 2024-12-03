@@ -3,24 +3,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "shaderClass.h"
+
 const int WIDTH = 800;
 const int HEIGHT= 800;
-
-
-// Vertex Shader source code
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-//Fragment Shader source code
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 1.0f, 1.00f, 1.0f);\n"
-"}\n\0";
 
 
 int main() {
@@ -37,12 +23,12 @@ int main() {
 	
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
-		-0.5f,	-0.5f * (float)sqrt(3)	/3,	0.0f,		//0
-		0.5f,	-0.5f * (float)sqrt(3)	/3, 0.0f,		//1
-		0.0f,	0.5f * (float)sqrt(3)	*	2,	0.0f,		//2
-		0.5f/2,	0.5f * (float)sqrt(3)	/ 6 ,	0.0f,		//3
-		0.0f,	-0.5f * (float)sqrt(3)	/ 6,	0.0f,		//4
-		-0.5f/2, 0.5f * (float)sqrt(3)	/ 6,	0.0f,		//5
+		-0.5f,	-0.5f * (float)sqrt(3)	/3,	0.0f,			//0
+		0.5f,	-0.5f * (float)sqrt(3)	/3, 0.0f,			//1
+		0.0f,	1.0f / (float)sqrt(3)	,	0.0f,		//2
+		-0.5f/2,	0.25f / (float)sqrt(3)	,	0.0f,		//3
+		0.0f,	-0.5f / (float)sqrt(3)	,	0.0f,		//4
+		0.5f/2, 0.25f / (float)sqrt(3)	,	0.0f,		//5
 	};
 
 	GLuint indices[] = {
@@ -71,43 +57,16 @@ int main() {
 	//Specifies the viewport within which OpenGL renders will be displayed maybe?
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	// This creates the vertex shader object and loads in the code
-	// that was at the start of this file
-	GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertex_shader);
-
-	//Loads in the fragment shader object, and once again, puts in the code
-	// that we saw at the beginning of the file, puts it in a fragment shader object
-	GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragment_shader);
-
-	//Shader program
-		//Creates a shader program to use the shaders
-		GLuint shader_program = glCreateProgram();
-
-		//Attaches the vertex shader to the shader program
-		glAttachShader(shader_program, vertex_shader);
-		//Attaches fragment shader to shader program
-		glAttachShader(shader_program, fragment_shader);
-
-		//Links program, so it compiles and runs with the rest of the code I guess?
-		glLinkProgram(shader_program);
-
-		//Now that we've loaded the shaders into the shader program, we can delete the shader objects
-		glDeleteShader(vertex_shader);
-		glDeleteShader(fragment_shader);
-
-		//We're initializing the VertexArrayObject and the VertexBufferObject
-		//The array stores all the points in a matrix, and the buffer, well
-		//that's what we use to load the points? Before we draw them I mean
-	//Shader program end
+	//Shaders
+	Shader shaderProgram("default.vert","default.frag");
 	
+	//We're initializing the VertexArrayObject and the VertexBufferObject
+	//The array stores all the points in a matrix, and the buffer, well
+	//that's what we use to load the points? Before we draw them I mean
+
 	GLuint VAO,VBO,EBO; //Initialize Vertex Array Object,
 						//			 Vertex Buffer Object,
 						//			 Element Buffer Object
-
 
 
 	//This generates a buffer with only one object
@@ -152,7 +111,7 @@ int main() {
 		//can be drawn into it
 		glClear(GL_COLOR_BUFFER_BIT);
 		//Tells OpenGL to use that one shader program
-		glUseProgram(shader_program);
+		shaderProgram.Activate();
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
 		//Does the thing to draw the array
@@ -165,8 +124,7 @@ int main() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteProgram(shader_program);
-
+	shaderProgram.Delete();
 	//Kills the window lol, cleans up resources I guess
 	glfwDestroyWindow(win);
 	//Ends glfw stuff, I guess?

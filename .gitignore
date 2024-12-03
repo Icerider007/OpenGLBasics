@@ -10,8 +10,9 @@
 *.userosscache
 *.sln.docstates
 
-#Output folder
+#Folders to ignore
 out/
+VC/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
