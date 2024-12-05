@@ -25,13 +25,25 @@ int main() {
 	
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
+		//			Co-ordinates						
 		-0.5f,	-0.5f * (float)sqrt(3)	/3,	0.0f,			//0
 		0.5f,	-0.5f * (float)sqrt(3)	/3, 0.0f,			//1
-		0.0f,	1.0f / (float)sqrt(3)	,	0.0f,		//2
+		0.0f,	1.0f / (float)sqrt(3)	,	0.0f,			//2
 		-0.5f/2,	0.25f / (float)sqrt(3)	,	0.0f,		//3
-		0.0f,	-0.5f / (float)sqrt(3)	,	0.0f,		//4
-		0.5f/2, 0.25f / (float)sqrt(3)	,	0.0f,		//5
+		0.0f,	-0.5f / (float)sqrt(3)	,	0.0f,			//4
+		0.5f/2, 0.25f / (float)sqrt(3)	,	0.0f,			//5
 	};
+
+	GLfloat colors[] = {
+		//Colors
+		0.8f, 0.3f, 0.02f //0
+		0.8f, 0.3f, 0.02f //1
+		1.0f, 0.6f, 0.32f //2
+		0.9f, 0.45f, 0.17f //3
+		0.9f, 0.45f, 0.17f //4
+		0.8f, 0.3f, 0.02f //5
+	}
+
 
 	GLuint indices[] = {
 		0,4,3,	//Lower left triangle
@@ -70,7 +82,7 @@ int main() {
 	//The array stores all the points in a matrix, and the buffer, well
 	//that's what we use to load the points? Before we draw them I mean
 
-	GLuint VAO,VBO,EBO; //Initialize Vertex Array Object,
+	GLuint VAO,VBO_pos,VBO_color,EBO; //Initialize Vertex Array Object,
 						//			 Vertex Buffer Object,
 						//			 Element Buffer Object
 
@@ -78,18 +90,19 @@ int main() {
 	//This generates a buffer with only one object
 	//Generates reference value
 	std::cout << "Generating buffers..\n";
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &VBO_pos);
+	glGenBuffers(1, &VBO_color);
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
 	
 	//This makes it so it knows which buffer to refer to, same as the other bind function
 	//Also specifies its buffer type
 	std::cout << "Binding buffers..\n";
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_pos);
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-	//This puts the VAO data into the buffer (VBO)
+	//This puts the VAO data into the buffer (VBO_pos)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	//This uh, it configures the vertex attributes so OpenGL knows how to read
@@ -99,8 +112,12 @@ int main() {
 	//This enables the vertex attrib array and shows OpenGl which index to start reading from
 	glEnableVertexAttribArray(0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_color);
+	glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
 	//This unbinds the buffers and arrays
-	//Binds VBO to 0
+	//Binds VBO_pos to 0
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	//Binds VAO to 0
 	glBindVertexArray(0);
@@ -134,7 +151,7 @@ int main() {
 	std::cout << "Cleaning up arrays and buffers\n";
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &EBO);
-	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &VBO_pos);
 	shaderProgram.Delete();
 	//Kills the window lol, cleans up resources I guess
 	glfwDestroyWindow(win);
