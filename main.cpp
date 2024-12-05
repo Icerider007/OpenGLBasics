@@ -112,9 +112,12 @@ int main() {
 	//This enables the vertex attrib array and shows OpenGl which index to start reading from
 	glEnableVertexAttribArray(0);
 
+	//Real quick binding VBO_color to GL_ARRAY_BUFFER and then passing it onto 
+	//layout 1 of VAO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO_color);
-	glVertexAttribPointer(0,3,GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+	glVertexAttribPointer(1,3,GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
 
 	//This unbinds the buffers and arrays
 	//Binds VBO_pos to 0
