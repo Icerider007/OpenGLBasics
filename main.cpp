@@ -64,7 +64,7 @@ int main() {
 
 	//Shaders
 	std::cout << "Loading shaders..\n" ;
-	Shader shaderProgram("default.vert","default.frag");
+	Shader shaderProgram("../default.vert","../default.frag");
 	
 	//We're initializing the VertexArrayObject and the VertexBufferObject
 	//The array stores all the points in a matrix, and the buffer, well

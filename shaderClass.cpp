@@ -7,7 +7,6 @@ std::string get_file_contents(const char* filename)
 	std::ifstream in(filename, std::ios::binary);
 	if (in)
 	{
-		std::cout << "Printing from read file function\n";
 		std::string contents;
 		in.seekg(0, std::ios::end);
 		contents.resize(in.tellg());
@@ -26,8 +25,6 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 	std::cout << "Reading shaders from\n" << vertexFile << "\n" << fragmentFile << "\n";
 	std::string vertexCode = get_file_contents(vertexFile);
 	std::string fragmentCode = get_file_contents(fragmentFile);
-	std::cout << "Vertex Shader Loaded:\n" << vertexCode << "\n";
-	std::cout << "Fragment Shader Loaded:\n" << fragmentCode << "\n";
 
 	// Convert the shader source strings into character arrays
 	const char* vertexSource = vertexCode.c_str();
