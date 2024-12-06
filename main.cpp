@@ -83,9 +83,6 @@ int main() {
 
 	//stbi_set_flip_vertically_on_load(true);
 	unsigned char* bytes = stbi_load("../textures/facts.png", &imgWidth, &imgHeight, &imgColorNum, 0);
-
-	stbi_image_free(bytes);
-
 	GLuint texture;
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0);
