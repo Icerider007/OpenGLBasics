@@ -47,7 +47,7 @@ int main() {
 		-1.0f/(float)sqrt(2),	-1.0f/(float)sqrt(2) ,	0.0f,			//0
 		1.0f/(float)sqrt(2),	-1.0f/(float)sqrt(2) ,  0.0f,			//1
 		-1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,			//2
-		1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,		    //3
+		1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,		    //3k
 	};
 
 	GLfloat color[] = {
@@ -75,37 +75,42 @@ int main() {
 
 	//Shaders
 	std::cout << "Loading shaders..\n" ;
-	Shader shaderProgram("D:/Kode/GameDev/openGLTriangle/OpenGLTutorial/default.vert","D:/Kode/GameDev/openGLTriangle/OpenGLTutorial/default.frag");
+	Shader shaderProgram("../default.vert","../default.frag");
 
 	
 	//Textures
 	int imgWidth, imgHeight, imgColorNum;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("D:/Kode/GameDev/openGLTriangle/OpenGLTutorial/textures/image.png", &imgWidth, &imgHeight, &imgColorNum, 0);
+	unsigned char* bytes = stbi_load("../textures/test.png", &imgWidth, &imgHeight, &imgColorNum, 0);
 
 	GLuint texture;
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//Set filtering modes
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	//Specify texture wrapping
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	//Generate mip maps
+	//glGenerateMipmap(GL_TEXTURE_2D);
 
 	stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	//Specifies the viewport within which OpenGL renders will be displayed maybe?
-	glViewport(0, 0, WIDTH, HEIGHT);
 
 	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
 	shaderProgram.Activate();
 	glUniform1i(tex0Uni, 0);
+	
+	//Specifies the viewport within which OpenGL renders will be displayed maybe?
+	glViewport(0, 0, WIDTH, HEIGHT);
+
 	//We're initializing the VertexArrayObject and the VertexBufferObject
 	//The array stores all the points in a matrix, and the buffer, well
 	//that's what we use to load the points? Before we draw them I mean
@@ -164,14 +169,23 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
+	GLuint scaleID = glGetUniformLocation(shaderProgram.ID, "scale");
+	GLuint timeLocation = glGetUniformLocation(shaderProgram.ID, "time");
 
+	float startTime = glfwGetTime();
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
 	std::cout << "Starting render loop\n";
 	while (!glfwWindowShouldClose(win)) {
 		glfwPollEvents();
-	
+		glfwSwapInterval(1);
+
+		float currentTime = glfwGetTime();
+		float deltaTime = currentTime - startTime;
+
+		// Update time uniform
+		glUniform1f(timeLocation, deltaTime);
+
 		//Rn, it just changes the background color. Idk what it's normally used for
 		glClearColor(0.47f, 0.14f, 0.17f, 1.0f);
 		//This is the thing that actually cleans the back buffer so the front buffer
@@ -179,8 +193,8 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		//Tells OpenGL to use that one shader program
 		shaderProgram.Activate();
-		glUniform1f(uniID,0.0f);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glUniform1f(scaleID,0.0f);
+		glBindTexture(GL_TEXTURE_2D, texture);
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
 		//Does the thing to draw the array
@@ -197,6 +211,7 @@ int main() {
 	glDeleteBuffers(1, &VBO_pos);
 	glDeleteBuffers(1, &VBO_color);
 	glDeleteBuffers(1, &VBO_texPos);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glDeleteTextures(1, &texture);
 	shaderProgram.Delete();
 	//Kills the window lol, cleans up resources I guess
