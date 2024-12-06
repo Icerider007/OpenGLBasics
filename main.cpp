@@ -24,6 +24,23 @@ int main() {
 	//supposed to have modern functions I guess
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
+	//Creates the window, and at the same time, adds title and stuff
+	std::cout << "Creating window\n";
+	GLFWwindow* win = glfwCreateWindow(WIDTH, HEIGHT, "Winner",NULL,NULL);
+
+	//Error check
+	if (win == NULL) {
+		std::cout << "Failed to create window\n";
+		glfwTerminate();
+		return 1;
+	}
+	
+	std::cout << "Window created successfully\n";
+	//This uhhh
+	//"Introduces the current window to the context"? Wtf does that
+	//even mean?
+	glfwMakeContextCurrent(win);
+
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
 		//			Co-ordinates						
@@ -42,25 +59,52 @@ int main() {
 	};
 
 	GLfloat texPos[] = {
-		0.0f, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
+		0.0f, 0.0f, //0
+		0.0f, 0.0f, // 1
+		0.0f, 0.0f, // 2
+		0.0f, 0.0f, // 3
 	};
 
 	GLuint indices[] = {
 		0,1,2,	//Lower left triangle
 		1,3,2,	//Lower right triangle
 	};
+	
+	//"Loads glad", and glad has a shit ton of functions I guess 
+	gladLoadGL();
 
 	//Shaders
 	std::cout << "Loading shaders..\n" ;
-	Shader shaderProgram("../default.vert","../default.frag");
+	Shader shaderProgram("D:/Kode/GameDev/openGLTriangle/OpenGLTutorial/default.vert","D:/Kode/GameDev/openGLTriangle/OpenGLTutorial/default.frag");
+
+	
+	// Stores status of compilation
+	GLint hasCompiled;
+	// Character array to store error message in
+	char infoLog[1024];
+	if (type != "PROGRAM")
+	{
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &hasCompiled);
+		if (hasCompiled == GL_FALSE)
+		{
+			glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+			std::cout << "SHADER_COMPILATION_ERROR for:" << type << "\n" << infoLog << std::endl;
+		}
+	}
+	else
+	{
+		glGetProgramiv(shader, GL_LINK_STATUS, &hasCompiled);
+		if (hasCompiled == GL_FALSE)
+		{
+			glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+			std::cout << "SHADER_LINKING_ERROR for:" << type << "\n" << infoLog << std::endl;
+		}
+	}
 	
 	//Textures
 	int imgWidth, imgHeight, imgColorNum;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("../textures/image.png", &imgWidth, &imgHeight, &imgColorNum, 0);
+	unsigned char* bytes = stbi_load("D:/Kode/GameDev/openGLTriangle/OpenGLTutorial/textures/image.png", &imgWidth, &imgHeight, &imgColorNum, 0);
 
 	GLuint texture;
 	glGenTextures(1, &texture);
@@ -79,33 +123,12 @@ int main() {
 	stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
-	shaderProgram.Activate();
-	glUniform1i(tex0Uni, 0);
-
-	//Creates the window, and at the same time, adds title and stuff
-	std::cout << "Creating window\n";
-	GLFWwindow* win = glfwCreateWindow(WIDTH, HEIGHT, "Winner",NULL,NULL);
-
-	//Error check
-	if (win == NULL) {
-		std::cout << "Failed to create window\n";
-		glfwTerminate();
-		return 1;
-	}
-	
-	std::cout << "Window created successfully\n";
-	//This uhhh
-	//"Introduces the current window to the context"? Wtf does that
-	//even mean?
-	glfwMakeContextCurrent(win);
-
-	//"Loads glad", and glad has a shit ton of functions I guess 
-	gladLoadGL();
-
 	//Specifies the viewport within which OpenGL renders will be displayed maybe?
 	glViewport(0, 0, WIDTH, HEIGHT);
 
+	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
+	shaderProgram.Activate();
+	glUniform1i(tex0Uni, 0);
 	//We're initializing the VertexArrayObject and the VertexBufferObject
 	//The array stores all the points in a matrix, and the buffer, well
 	//that's what we use to load the points? Before we draw them I mean
@@ -179,7 +202,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		//Tells OpenGL to use that one shader program
 		shaderProgram.Activate();
-		glUniform1f(uniID,1.0f);
+		glUniform1f(uniID,0.0f);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
@@ -195,6 +218,8 @@ int main() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO_pos);
+	glDeleteBuffers(1, &VBO_color);
+	glDeleteBuffers(1, &VBO_texPos);
 	glDeleteTextures(1, &texture);
 	shaderProgram.Delete();
 	//Kills the window lol, cleans up resources I guess
