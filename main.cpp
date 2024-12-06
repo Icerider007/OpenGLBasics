@@ -2,6 +2,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb/stb_image.h>
 
 #include "shaderClass.h"
 
@@ -26,30 +27,57 @@ int main() {
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
 		//			Co-ordinates						
-		-0.5f,	-0.5f * (float)sqrt(3)	/3,	0.0f,			//0
-		0.5f,	-0.5f * (float)sqrt(3)	/3, 0.0f,			//1
-		0.0f,	1.0f / (float)sqrt(3)	,	0.0f,			//2
-		-0.5f/2,	0.25f / (float)sqrt(3)	,	0.0f,		//3
-		0.0f,	-0.5f / (float)sqrt(3)	,	0.0f,			//4
-		0.5f/2, 0.25f / (float)sqrt(3)	,	0.0f,			//5
+		-1.0f/(float)sqrt(2),	-1.0f/(float)sqrt(2) ,	0.0f,			//0
+		1.0f/(float)sqrt(2),	-1.0f/(float)sqrt(2) ,  0.0f,			//1
+		-1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,			//2
+		1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,		    //3
 	};
 
 	GLfloat color[] = {
 		//Colors
-		1.0f, 0.0f, 0.0f, //0
-		0.0f, 0.0f, 1.00f, //1
-		0.0f, 1.0f, 0.00f, //2
-		0.0f, 0.00f, 1.00f, //3
-		0.0f, 1.00f, 0.00f, //4
-		1.0f, 0.0f, 0.00f, //5
+		1.0f, 0.0f, 0.0f, //0 - Red
+		0.0f, 1.0f, 0.00f, //1 - Green
+		0.0f, 0.0f, 1.00f, //2 - Blue
+		1.0f, 1.00f, 1.00f, //3 White
 	};
 
+	GLfloat texPos[] = {
+		0.0f, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+	};
 
 	GLuint indices[] = {
-		0,4,3,	//Lower left triangle
-		4,1,5,	//Lower right triangle
-		3,5,2	//Upper triangle
+		0,1,2,	//Lower left triangle
+		1,3,2,	//Lower right triangle
 	};
+
+	//Textures
+	int imgWidth, imgHeight, imgColorNum;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* bytes = stbi_load("../textures/image.png", &imgWidth, &imgHeight, &imgColorNum);
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glActiveTexture(GLTEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_free(bytes);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
+	shaderProgram.Activate();
+	glUniform1i(tex0Uni, 0);
 
 	//Creates the window, and at the same time, adds title and stuff
 	std::cout << "Creating window\n";
@@ -82,7 +110,7 @@ int main() {
 	//The array stores all the points in a matrix, and the buffer, well
 	//that's what we use to load the points? Before we draw them I mean
 
-	GLuint VAO,VBO_pos,VBO_color,EBO; //Initialize Vertex Array Object,
+	GLuint VAO,VBO_pos,VBO_color,VBO_texPos,EBO; //Initialize Vertex Array Object,
 						//			 Vertex Buffer Object,
 						//			 Element Buffer Object
 
@@ -92,6 +120,7 @@ int main() {
 	std::cout << "Generating buffers..\n";
 	glGenBuffers(1, &VBO_pos);
 	glGenBuffers(1, &VBO_color);
+	glGenBuffers(1, &VBO_texPos);
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
 	
@@ -119,6 +148,12 @@ int main() {
 	glVertexAttribPointer(1,3,GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 
+	//Binding VBO_texPos to GL_ARRAY_BUFFER and then passing it into layout 2 of VAO
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_texPos);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(texPos), texPos, GL_STATIC_DRAW);
+	glVertexAttribPointer(2,2,GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
+	glEnableVertexAttribArray(2);
+
 	//This unbinds the buffers and arrays
 	//Binds VBO_pos to 0
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -127,6 +162,9 @@ int main() {
 	//Binds EBO to 0, must be done after unbinding VAO because
 	//EBO is linked in VAO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
@@ -141,6 +179,8 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		//Tells OpenGL to use that one shader program
 		shaderProgram.Activate();
+		glUniform1f(uniID,1.0f);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
 		//Does the thing to draw the array
@@ -155,6 +195,7 @@ int main() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VBO_pos);
+	glDeleteTextures(1, &texture);
 	shaderProgram.Delete();
 	//Kills the window lol, cleans up resources I guess
 	glfwDestroyWindow(win);
