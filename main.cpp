@@ -80,8 +80,11 @@ int main() {
 	
 	//Textures
 	int imgWidth, imgHeight, imgColorNum;
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("../textures/test.png", &imgWidth, &imgHeight, &imgColorNum, 0);
+
+	//stbi_set_flip_vertically_on_load(true);
+	unsigned char* bytes = stbi_load("../textures/facts.png", &imgWidth, &imgHeight, &imgColorNum, 0);
+
+	stbi_image_free(bytes);
 
 	GLuint texture;
 	glGenTextures(1, &texture);
@@ -100,7 +103,7 @@ int main() {
 	//Generate mip maps
 	//glGenerateMipmap(GL_TEXTURE_2D);
 
-	stbi_image_free(bytes);
+	//stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 
@@ -172,7 +175,6 @@ int main() {
 	GLuint scaleID = glGetUniformLocation(shaderProgram.ID, "scale");
 	GLuint timeLocation = glGetUniformLocation(shaderProgram.ID, "time");
 
-	float startTime = glfwGetTime();
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
 	std::cout << "Starting render loop\n";
@@ -180,11 +182,9 @@ int main() {
 		glfwPollEvents();
 		glfwSwapInterval(1);
 
-		float currentTime = glfwGetTime();
-		float deltaTime = currentTime - startTime;
-
-		// Update time uniform
-		glUniform1f(timeLocation, deltaTime);
+		//Update the time uniform
+		float timeValue = glfwGetTime(); // Get the elapsed time since the program started
+		glUniform1f(timeLocation, timeValue);
 
 		//Rn, it just changes the background color. Idk what it's normally used for
 		glClearColor(0.47f, 0.14f, 0.17f, 1.0f);
