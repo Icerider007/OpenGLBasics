@@ -53,21 +53,25 @@ int main() {
 		1,3,2,	//Lower right triangle
 	};
 
+	//Shaders
+	std::cout << "Loading shaders..\n" ;
+	Shader shaderProgram("../default.vert","../default.frag");
+	
 	//Textures
 	int imgWidth, imgHeight, imgColorNum;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("../textures/image.png", &imgWidth, &imgHeight, &imgColorNum);
+	unsigned char* bytes = stbi_load("../textures/image.png", &imgWidth, &imgHeight, &imgColorNum, 0);
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	glActiveTexture(GLTEXTURE0);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParametri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -102,10 +106,6 @@ int main() {
 	//Specifies the viewport within which OpenGL renders will be displayed maybe?
 	glViewport(0, 0, WIDTH, HEIGHT);
 
-	//Shaders
-	std::cout << "Loading shaders..\n" ;
-	Shader shaderProgram("../default.vert","../default.frag");
-	
 	//We're initializing the VertexArrayObject and the VertexBufferObject
 	//The array stores all the points in a matrix, and the buffer, well
 	//that's what we use to load the points? Before we draw them I mean
