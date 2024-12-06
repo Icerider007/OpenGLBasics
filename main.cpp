@@ -76,7 +76,7 @@ int main() {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	stbi_free(bytes);
+	stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
