@@ -15,7 +15,6 @@ out/
 textures/*.jpg
 textures/Goth.png
 textures/sa.png
-textures/facts.png
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

@@ -81,7 +81,7 @@ int main() {
 	//Textures
 	int imgWidth, imgHeight, imgColorNum;
 
-	//stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(true);
 	unsigned char* bytes = stbi_load("../textures/facts.png", &imgWidth, &imgHeight, &imgColorNum, 0);
 	GLuint texture;
 	glGenTextures(1, &texture);
