@@ -3,6 +3,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb/stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "shaderClass.h"
 
@@ -44,10 +47,14 @@ int main() {
 	//Positions of the triangle vertices
 	GLfloat vertices[] = {
 		//			Co-ordinates						
-		-1.0f/(float)sqrt(2),	-1.0f/(float)sqrt(2) ,	0.0f,			//0
-		1.0f/(float)sqrt(2),	-1.0f/(float)sqrt(2) ,  0.0f,			//1
-		-1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,			//2
-		1.0f/(float)sqrt(2),	 1.0f/(float)sqrt(2)	,	0.0f,		    //3k
+		-0.5,	-0.5,	0.5,	//0	
+		 0.5,	-0.5,	0.5,	//1
+		-0.5,	 0.5,	0.5,	//2
+		 0.5,	 0.5,   0.5,	//3	
+		-0.5,	-0.5,	-0.5,	//4
+         0.5,	-0.5,	-0.5,	//5
+        -0.5,	 0.5,	-0.5,	//6
+         0.5,	 0.5,   -0.5,	//7
 	};
 
 	GLfloat color[] = {
@@ -63,11 +70,31 @@ int main() {
 		1.0f, 0.0f, // 1
 		0.0f, 1.0f, // 2
 		1.0f, 1.0f, // 3
+		0.0f, 0.0f, // 4
+        1.0f, 0.0f, // 5
+        0.0f, 1.0f, // 6
+        1.0f, 1.0f, // 7
 	};
 
 	GLuint indices[] = {
-		0,1,2,	//Lower left triangle
-		1,3,2,	//Lower right triangle
+		// Front face
+		0, 1, 2,  
+		1, 3, 2,
+		// Back face
+		4, 5, 6,  
+		5, 7, 6,
+		// Left face
+		0, 4, 2,  
+		4, 6, 2,
+		// Right face
+		1, 5, 3,  
+		5, 7, 3,
+		// Top face
+		2, 3, 6,  
+		3, 7, 6,
+		// Bottom face
+		0, 1, 4,  
+		1, 5, 4
 	};
 	
 	//"Loads glad", and glad has a shit ton of functions I guess 
@@ -82,7 +109,7 @@ int main() {
 	int imgWidth, imgHeight, imgColorNum;
 
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("../textures/fax.png", &imgWidth, &imgHeight, &imgColorNum, STBI_rgb_alpha);
+	unsigned char* bytes = stbi_load("../textures/test.png", &imgWidth, &imgHeight, &imgColorNum, STBI_rgb_alpha);
 	GLuint texture;
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0);
@@ -170,32 +197,59 @@ int main() {
 
 
 	GLuint scaleID = glGetUniformLocation(shaderProgram.ID, "scale");
-	GLuint timeLocation = glGetUniformLocation(shaderProgram.ID, "time");
 
+	//Enables depth buffer
+	glEnable(GL_DEPTH_TEST);
+
+	float rotation = 0.0f;
+	double prevTime = glfwGetTime();
 
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
 	std::cout << "Starting render loop\n";
 	while (!glfwWindowShouldClose(win)) {
 		glfwPollEvents();
-		glfwSwapInterval(1);
-
-		//Update the time uniform
-		float timeValue = glfwGetTime(); // Get the elapsed time since the program started
-		glUniform1f(timeLocation, timeValue);
-
+		glfwSwapInterval(1);	
 		//Rn, it just changes the background color. Idk what it's normally used for
 		glClearColor(0.47f, 0.14f, 0.17f, 1.0f);
 		//This is the thing that actually cleans the back buffer so the front buffer
 		//can be drawn into it
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Tells OpenGL to use that one shader program
 		shaderProgram.Activate();
+
+		double currentTime = glfwGetTime();
+		if (currentTime - prevTime >= 1/60){
+			rotation += 0.5f;
+			prevTime = currentTime;
+		}
+
+		//Initialize matrices
+		glm::mat4 model = glm::mat4(1.0f); //Model matrix (Local -> World)
+		glm::mat4 view = glm::mat4(1.0f); //View matrix (World -> Camera)
+		glm::mat4 proj = glm::mat4(1.0f); //Projection matrix (Camera -> Clip)
+
+		//Specifying matrix values
+		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.2f, 0.5f, 0.2f));
+		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
+		proj = glm::perspective(glm::radians(60.0f), (float)(WIDTH/HEIGHT), 0.1f, 100.0f);
+
+		//Passing on matrices to vertex shader
+		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+		int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+		int projLoc= glGetUniformLocation(shaderProgram.ID, "proj");
+		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+
+
 		glUniform1f(scaleID,0.0f);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
 		//Does the thing to draw the array
-		glDrawElements(GL_TRIANGLES, 9 , GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int) , GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(win);
 

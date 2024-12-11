@@ -5,6 +5,7 @@ project(Yuno)
 
 #Adding the glfw directory
 add_subdirectory(Libraries/glfw)
+
 #adding stbi subdir
 include_directories("${CMAKE_SOURCE_DIR}/Libraries/include/stb")
 
