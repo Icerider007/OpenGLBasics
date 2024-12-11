@@ -13,7 +13,7 @@ include_directories("${CMAKE_SOURCE_DIR}/Libraries/include/stb")
 include_directories("${CMAKE_SOURCE_DIR}/Libraries/include/")
 
 # Add the executable
-add_executable(app main.cpp glad.c shaderClass.cpp stb.cpp)
+add_executable(app main.cpp glad.c shaderClass.cpp camera.cpp stb.cpp)
 
 # Link GLFW to the executable
 target_link_libraries(app PRIVATE glfw)

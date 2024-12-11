@@ -70,6 +70,7 @@ int main() {
 		1.0f, 0.0f, // 1
 		0.0f, 1.0f, // 2
 		1.0f, 1.0f, // 3
+
 		0.0f, 0.0f, // 4
         1.0f, 0.0f, // 5
         0.0f, 1.0f, // 6
@@ -77,23 +78,17 @@ int main() {
 	};
 
 	GLuint indices[] = {
-		// Front face
-		0, 1, 2,  
+		0, 1, 2,  // Front face
 		1, 3, 2,
-		// Back face
-		4, 5, 6,  
+		4, 5, 6,  // Back face
 		5, 7, 6,
-		// Left face
-		0, 4, 2,  
+		0, 4, 2,  // Left face
 		4, 6, 2,
-		// Right face
-		1, 5, 3,  
+		1, 5, 3,  // Right face
 		5, 7, 3,
-		// Top face
-		2, 3, 6,  
+		2, 3, 6,  // Top face
 		3, 7, 6,
-		// Bottom face
-		0, 1, 4,  
+		0, 1, 4,  // Bottom face
 		1, 5, 4
 	};
 	
@@ -195,15 +190,12 @@ int main() {
 	//EBO is linked in VAO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
-	GLuint scaleID = glGetUniformLocation(shaderProgram.ID, "scale");
+	//Camera
+	Camera camera(width, height, glm::vec4(0.0f, 0.0f, 3.0f));
 
 	//Enables depth buffer
 	glEnable(GL_DEPTH_TEST);
-
-	float rotation = 0.0f;
-	double prevTime = glfwGetTime();
-
+	
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
 	std::cout << "Starting render loop\n";
 	while (!glfwWindowShouldClose(win)) {
@@ -211,40 +203,15 @@ int main() {
 		glfwSwapInterval(1);	
 		//Rn, it just changes the background color. Idk what it's normally used for
 		glClearColor(0.47f, 0.14f, 0.17f, 1.0f);
+		
 		//This is the thing that actually cleans the back buffer so the front buffer
-		//can be drawn into it
+		//can be drawn into it. Including the DEPTH_BUFFER, I guess?
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Tells OpenGL to use that one shader program
 		shaderProgram.Activate();
 
-		double currentTime = glfwGetTime();
-		if (currentTime - prevTime >= 1/60){
-			rotation += 0.5f;
-			prevTime = currentTime;
-		}
+		camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
-		//Initialize matrices
-		glm::mat4 model = glm::mat4(1.0f); //Model matrix (Local -> World)
-		glm::mat4 view = glm::mat4(1.0f); //View matrix (World -> Camera)
-		glm::mat4 proj = glm::mat4(1.0f); //Projection matrix (Camera -> Clip)
-
-		//Specifying matrix values
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.2f, 0.5f, 0.2f));
-		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-		proj = glm::perspective(glm::radians(60.0f), (float)(WIDTH/HEIGHT), 0.1f, 100.0f);
-
-		//Passing on matrices to vertex shader
-		int modelLoc = glGetUniformLocation(shaderProgram.ID, "model");
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-
-		int viewLoc = glGetUniformLocation(shaderProgram.ID, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-		int projLoc= glGetUniformLocation(shaderProgram.ID, "proj");
-		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
-
-
-		glUniform1f(scaleID,0.0f);
 		glBindTexture(GL_TEXTURE_2D, texture);
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
