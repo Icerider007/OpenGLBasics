@@ -6,13 +6,13 @@ layout (location = 2) in vec2 aTex;
 out vec3 color;
 out vec2 texPos;
 
-mat4 camMatrix;
+uniform mat4 camMatrix;
 
 void main()
 {
 	gl_Position = camMatrix * vec4(aPos, 1.0);
 
-   color = aColor;
-   texPos = aTex;
+	color = aColor;
+	texPos = aTex;
 };
 

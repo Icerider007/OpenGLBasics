@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "shaderClass.h"
+#include "camera.h"
 
 const int WIDTH = 800;
 const int HEIGHT= 800;
@@ -18,13 +19,10 @@ int main() {
 	std::cout << "Initializing glfw..\n" ;
 	glfwInit();
 
-	//Tells glfw openGL version. Shouldn't this come AFTER we specify profile?
+	//Tells glfw openGL version and type
 	std::cout << "Setting glfw window hints\n";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-	//Tells glfw what type of OpenGL we're using, and that actually is important because different versions of OpenGl have different functions. This one is 
-	//supposed to have modern functions I guess
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	
 	//Creates the window, and at the same time, adds title and stuff
@@ -39,9 +37,8 @@ int main() {
 	}
 	
 	std::cout << "Window created successfully\n";
-	//This uhhh
-	//"Introduces the current window to the context"? Wtf does that
-	//even mean?
+	//Makes it so the current context is this window, so all
+	//commands apply to this one. I think?
 	glfwMakeContextCurrent(win);
 
 	//Positions of the triangle vertices
@@ -92,7 +89,7 @@ int main() {
 		1, 5, 4
 	};
 	
-	//"Loads glad", and glad has a shit ton of functions I guess 
+	//"Loads glad", and glad has a shit ton of OpenGL functions 
 	gladLoadGL();
 
 	//Shaders
@@ -104,7 +101,9 @@ int main() {
 	int imgWidth, imgHeight, imgColorNum;
 
 	stbi_set_flip_vertically_on_load(true);
+	//Loads the texture into bytes. STBI_rgb_alpha means all color channels are supported
 	unsigned char* bytes = stbi_load("../textures/test.png", &imgWidth, &imgHeight, &imgColorNum, STBI_rgb_alpha);
+	//Initializes and generates texture
 	GLuint texture;
 	glGenTextures(1, &texture);
 	glActiveTexture(GL_TEXTURE0);
@@ -118,13 +117,14 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	
+	//Creates a texture image on the current GL_TEXTURE_2D
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
+	
 	//Generate mip maps
 	//glGenerateMipmap(GL_TEXTURE_2D);
 
 	//stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 
 	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
 	shaderProgram.Activate();
@@ -191,7 +191,7 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	//Camera
-	Camera camera(width, height, glm::vec4(0.0f, 0.0f, 3.0f));
+	Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
 
 	//Enables depth buffer
 	glEnable(GL_DEPTH_TEST);
@@ -199,7 +199,7 @@ int main() {
 	//Keeps the glfwWindow open and it keeps polling events until we click the "X" button on the window
 	std::cout << "Starting render loop\n";
 	while (!glfwWindowShouldClose(win)) {
-		glfwPollEvents();
+
 		glfwSwapInterval(1);	
 		//Rn, it just changes the background color. Idk what it's normally used for
 		glClearColor(0.47f, 0.14f, 0.17f, 1.0f);
@@ -210,16 +210,21 @@ int main() {
 		//Tells OpenGL to use that one shader program
 		shaderProgram.Activate();
 
+		//Checks for camera inputs
+		camera.Inputs(win);
+		//Updates and exports camera matrix to vertex shader
 		camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
+		//Binds texture
 		glBindTexture(GL_TEXTURE_2D, texture);
+		
 		//Binds vertex array over and over again
 		glBindVertexArray(VAO);
-		//Does the thing to draw the array
+		//Draws triangles using the VAO
 		glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(int) , GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(win);
-
+		glfwPollEvents();
 	}
 	
 	//Cleans up 
