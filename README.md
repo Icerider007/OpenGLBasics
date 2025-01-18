@@ -2,7 +2,7 @@
 
 ## Requirements:
 - CMake
-- ¯\_(ツ)_/¯
+- ¯\\_(ツ)_/¯
 
 ```
 git clone --recurse-submodules https://github.com/Icerider007/OpenGLBasics.git 
