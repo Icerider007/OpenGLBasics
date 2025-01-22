@@ -7,7 +7,8 @@
 ```
 git clone --recurse-submodules https://github.com/Icerider007/OpenGLBasics.git 
 cd OpenGLBasics 
-mkdir out 
+mkdir out
+cd out
 cmake .. -G Ninja
 ninja
 ```
